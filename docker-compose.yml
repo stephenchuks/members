@@ -1,0 +1,41 @@
+
+
+services:
+  api:
+    build: .
+    ports:
+      - '4000:4000'
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+      - redis
+
+  mongo:
+    image: mongo:6
+    restart: always
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+    # no built-in user creation here (we made it manually via mongosh)
+
+  redis:
+    image: redis:7
+    restart: always
+    ports:
+      - '6379:6379'
+    command:
+      [
+        "redis-server",
+        "--requirepass",
+        "${REDIS_PASSWORD}",
+        "--save",
+        "60",
+        "1"
+      ]
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+
+volumes:
+  mongo-data:
